@@ -1,0 +1,85 @@
+ARG BASEIMAGE
+FROM ${BASEIMAGE}
+
+RUN apk update && apk add \
+	alpine-sdk \
+        argp-standalone \
+        bmake \
+        bsd-compat-headers \
+        bzip2 \
+        ca-certificates \
+        coreutils \
+        curl \
+        fakeroot \
+        gcc \
+        git \
+        go \
+        groff \
+        libcap-dev \
+        libtirpc-dev \
+        elfutils \
+        elfutils-dev \
+        libseccomp-dev \
+        linux-headers \
+        lsb-release-minimal \
+        m4 \
+        make \
+        musl-dev \
+        patch \
+        pkgconf \
+        rpcgen \
+        xz
+
+RUN adduser -D -H -G abuild abuild
+
+ARG OS_ARCH
+ENV OS_ARCH=${OS_ARCH}
+ENV GOPATH /go
+ENV GOFLAGS="-buildvcs=false"
+ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
+
+ENV GPG_TTY /dev/console
+
+WORKDIR /src/libnvidia-container
+COPY . .
+
+ARG WITH_NVCGO=no
+ARG WITH_LIBELF=no
+ARG WITH_TIRPC=yes
+ARG WITH_SECCOMP=yes
+ENV WITH_NVCGO=${WITH_NVCGO}
+ENV WITH_LIBELF=${WITH_LIBELF}
+ENV WITH_TIRPC=${WITH_TIRPC}
+ENV WITH_SECCOMP=${WITH_SECCOMP}
+
+ARG REVISION
+ENV REVISION=${REVISION}
+ARG LIB_VERSION
+ENV LIB_VERSION=${LIB_VERSION}
+ARG LIB_TAG
+ENV LIB_TAG=${LIB_TAG}
+ARG LIB_BUILD
+ENV LIB_BUILD=${LIB_BUILD}
+ENV CPATH=/usr/include/tirpc
+ENV CC=gcc
+ENV MUSL=yes
+
+RUN make distclean && make -j"$(nproc)"
+
+# Use the revision as the package version for the time being
+ENV PKG_NAME libnvidia-container
+ENV PKG_VERS ${REVISION}
+ENV DIST_DIR=/tmp/${PKG_NAME}-${PKG_VERS}
+RUN mkdir -p $DIST_DIR ${DIST_DIR}/apk /dist && chgrp abuild ${DIST_DIR}/apk
+
+USER abuild
+WORKDIR ${DIST_DIR}/apk
+
+RUN newapkbuild -c libnvidia-container 
+
+CMD export DISTRIB=$(lsb_release -c -s); \
+        export SECTION="" \
+        make dist; \
+        make apk; \
+        mv ${DIST_DIR}/*.apk /dist
+

@@ -2,7 +2,9 @@
  * Copyright (c) 2017-2018, NVIDIA CORPORATION. All rights reserved.
  */
 
+#ifndef MUSL
 #include <gnu/lib-names.h>
+#endif
 
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -36,7 +38,9 @@ static int init_within_userns(struct error *);
 static int load_kernel_modules(struct error *, const char *);
 static int copy_config(struct error *, struct nvc_context *, const struct nvc_config *);
 
+#ifndef MUSL
 const char interpreter[] __attribute__((section(".interp"))) = LIB_DIR "/" LD_SO;
+#endif
 
 const struct __attribute__((__packed__)) {
         Elf64_Nhdr hdr;

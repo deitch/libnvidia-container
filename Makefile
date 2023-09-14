@@ -170,6 +170,10 @@ ifeq ($(WITH_SECCOMP), yes)
 LIB_CPPFLAGS       += -DWITH_SECCOMP $(shell pkg-config --cflags libseccomp)
 LIB_LDLIBS_SHARED  += $(shell pkg-config --libs libseccomp)
 endif
+ifeq ($(MUSL),yes)
+CPPFLAGS       += -DMUSL
+endif
+
 LIB_CPPFLAGS       += $(CPPFLAGS)
 LIB_CFLAGS         += $(CFLAGS)
 LIB_LDFLAGS        += $(LDFLAGS)
@@ -190,6 +194,10 @@ $(word 4,$(LIB_RPC_SRCS)): RPCGENFLAGS=-l
 
 ifeq ($(WITH_NVCGO), yes)
 $(LIB_RPC_SRCS): RPCGENFLAGS+=-DWITH_NVCGO
+endif
+
+ifeq ($(MUSL),yes)
+BIN_LDLIBS += -largp
 endif
 
 ##### Private rules #####
@@ -366,3 +374,8 @@ rpm: all
 			-D "git_commit ${REVISION}" \
 		SPECS/*.spec
 	-cd $(DESTDIR) && rpmlint RPMS/*
+
+apk: DESTDIR:=$(DIST_DIR)/$(LIB_NAME)_$(VERSION)_$(ARCH)
+apk: all
+	cd 
+

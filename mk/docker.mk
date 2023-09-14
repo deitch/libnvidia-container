@@ -34,10 +34,10 @@ REVISION 	 ?= $(shell git rev-parse HEAD)
 include $(CURDIR)/versions.mk
 
 # Supported OSs by architecture
-AMD64_TARGETS := ubuntu20.04 ubuntu18.04 ubuntu16.04 debian10 debian9
+AMD64_TARGETS := ubuntu20.04 ubuntu18.04 ubuntu16.04 debian10 debian9 alpine3.18
 X86_64_TARGETS := centos7 centos8 rhel7 rhel8 amazonlinux2 opensuse-leap15.1
 PPC64LE_TARGETS := ubuntu18.04 ubuntu16.04 centos7 centos8 rhel7 rhel8
-ARM64_TARGETS := ubuntu18.04
+ARM64_TARGETS := ubuntu18.04 alpine3.18
 AARCH64_TARGETS := centos7 rhel7 centos8 rhel8 amazonlinux2
 
 # Define top-level build targets
@@ -124,6 +124,11 @@ docker-amd64-verify: $(patsubst %, %-verify, $(AMD64_TARGETS)) \
 --ubuntu%: OS := ubuntu
 --debian%: OS := debian
 --amazonlinux%: OS := amazonlinux
+--alpine%: OS := alpine
+
+# private alpine target with overrides
+--alpine%: WITH_TIRPC = yes
+--alpine%: WITH_LIBELF = yes
 
 # private centos target with overrides
 --centos%: OS := centos

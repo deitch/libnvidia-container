@@ -21,6 +21,8 @@
 
 #include <rpc/rpc.h>
 
+#include <signal.h>
+
 #ifndef WITH_TIRPC
 /* Glibc is missing this prototype */
 SVCXPRT *svcunixfd_create(int, u_int, u_int);

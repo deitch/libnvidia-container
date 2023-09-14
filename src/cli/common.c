@@ -4,6 +4,10 @@
 
 #include <sys/sysmacros.h>
 
+#ifdef MUSL
+#include <linux/limits.h>
+#endif
+
 #include <inttypes.h>
 #include <string.h>
 
